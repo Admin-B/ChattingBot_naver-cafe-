@@ -3,28 +3,6 @@ var fs=require("fs");
 require("./dateFormat.js")();
 
 module.exports=function(HTTP_SERVER){
-	var io = require("socket.io").listen(HTTP_SERVER);
-	var gScoket; 
-	
-	io.sockets.on('connection',function(socket){
-		gScoket=socket;
-		OnSocket();
-	});
-
-	//웹소켓
-	function OnSocket(){ //gSocket 객체가 로드된 이후 시점.
-	}
-/*
-	var chatURL="https://chat.cafe.naver.com/room/26686242/tibyte:1467632762888?ssId=3";
-
-	var cafeId=chatURL.split("/room/")[1].split("/")[0];;
-	var roomId=chatURL.split("/room/")[1].split("/")[1].split("?")[0];
-	var roomNo=roomId.split(':')[1];
-
-	var ready_ProcComt=[];
-	var lastId=-Infinity;
-*/
-
 	Array.prototype.push=function(val){	this[this.length]=val;}
 	Array.prototype.last=function(){return this[this.length-1];}
 
