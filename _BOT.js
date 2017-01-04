@@ -135,8 +135,8 @@ module.exports=function(HTTP_SERVER){
 			json:true,
 			headers:headers,
 			body:{
-				"ver":1,"uid":"softislive","tid":"1483412107643","sid":"pBu!TrfOAeah!EgI3Gj!k32ZeQSR_M8Wtyelf5AJE_0-","deviceType":2001,"cmd":3001,
-				"bdy":{"cafeId":cafeId,"roomId":roomId,"msgId":"1483412107643","msgType":0,"msg":msg}
+				"ver":1,"uid":"","tid":"","sid":"","deviceType":2001,"cmd":3001,
+				"bdy":{"cafeId":cafeId,"roomId":roomId,"msgId":"","msgType":0,"msg":msg}
 			}
 		};
 		request(Command_req,function(err,response,data){
