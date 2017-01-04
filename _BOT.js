@@ -42,7 +42,7 @@ module.exports=function(HTTP_SERVER){
 			method:'post',
 			url:"https://chat.cafe.naver.com/api/Command.nhn",
 			headers:headers,
-			body:{"ver":1,"uid":naverID,"tid":roomNo,"sid":sID,"deviceType":2001,"cmd":1006,"bdy":{"cafeId":cafeId,"roomId":roomId,"updateTimeSec":0,"size":10}},
+			body:{"ver":1,"uid":naverID,"tid":roomNo,"sid":sID,"deviceType":2001,"cmd":1006,"bdy":{"cafeId":cafeId,"roomId":roomId,"updateTimeSec":0,"size":5}},
 			json:true
 		};
 
