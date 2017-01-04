@@ -29,8 +29,9 @@ module.exports=function(HTTP_SERVER){
 	Array.prototype.push=function(val){	this[this.length]=val;}
 	Array.prototype.last=function(){return this[this.length-1];}
 
-	//로그인 세션
 	const loginSession="";
+	const naverID="";
+	const sID="";
 	function ProcessingComments(Info){
 		var chatURL=Info.chatURL;
 		if(!chatURL){
@@ -64,7 +65,7 @@ module.exports=function(HTTP_SERVER){
 			method:'post',
 			url:"https://chat.cafe.naver.com/api/Command.nhn",
 			headers:headers,
-			body:{"ver":1,"uid":"","tid":roomNo,"sid":"","deviceType":,"cmd":,"bdy":{"cafeId":cafeId,"roomId":roomId,"updateTimeSec":0,"size":10}},
+			body:{"ver":1,"uid":naverID,"tid":roomNo,"sid":sID,"deviceType":2001,"cmd":1006,"bdy":{"cafeId":cafeId,"roomId":roomId,"updateTimeSec":0,"size":10}},
 			json:true
 		};
 
@@ -94,12 +95,24 @@ module.exports=function(HTTP_SERVER){
 			for(var i=ready_ProcComt.length-1; i>=0; i--){
 				var target=ready_ProcComt[i];
 				console.log(target);
-				switch(target.msg){
+
+				var msg=target.msg.split(" ");
+
+				switch(msg[0]){
 					case '날짜':
 					case '시간':
 						writeComment(chatURL,new Date().format("yyyy년 MM월 dd일 HH시 mm분"));
 						break;
-					case '':
+					case '이미지':
+
+						uploadImage(msg[1],function(err){
+							if(err){
+								writeComment(chatURL,target.nickname+"님이 요청하신 파일은 올바르지 않은 이미지 주소입니다.");
+								return;
+							}
+							writeComment(chatURL,this);
+						});			
+						break;				
 				}
 				lastId=ready_ProcComt.pop().id;
 			}
@@ -123,7 +136,13 @@ module.exports=function(HTTP_SERVER){
 		var cafeId=chatURL.split("/room/")[1].split("/")[0];
 		var roomId=chatURL.split("/room/")[1].split("/")[1].split("?")[0];
 		var roomNo=roomId.split(':')[1];
+	
+		var msgType=0;
 
+		if(typeof msg=="object"){
+			msg=msg;
+			msgType=301;
+		}
 		var headers={
 				'Referer':"https://chat.cafe.naver.com/room/"+cafeId+"/"+roomId+"?ssId=1",
 				'Cookie':loginSession
@@ -135,8 +154,8 @@ module.exports=function(HTTP_SERVER){
 			json:true,
 			headers:headers,
 			body:{
-				"ver":1,"uid":"","tid":"","sid":"","deviceType":2001,"cmd":3001,
-				"bdy":{"cafeId":cafeId,"roomId":roomId,"msgId":"","msgType":0,"msg":msg}
+				"ver":1,"uid":naverID,"tid":roomNo,"sid":sID,"deviceType":2001,"cmd":3001,
+				"bdy":{"cafeId":cafeId,"roomId":roomId,"msgId":"","msgType":msgType,"msg":msg}
 			}
 		};
 		request(Command_req,function(err,response,data){
@@ -146,8 +165,73 @@ module.exports=function(HTTP_SERVER){
 		});
 	}
 
-//카페주소
-	ProcessingComments({chatURL:"https://chat.cafe.naver.com/room/"});
-	ProcessingComments({chatURL:"https://chat.cafe.naver.com/room/"});
+	var MAX_TEMP_IMAGE_COUNT=100; //임시저장 이미지의 최대 허용치를 지정합니다.
+	var TEMP_IMAGE_INDEX=0;
+	function uploadImage(src,callback){
+		request(src,function(err,res,data){
+			if(data.length>50000000){
+				throw '업로드 하려는 파일의 크기가 한도를 초과하였습니다.';
+			}
+			var extname=res.headers['content-type'].split("/")[1];
+	
+			savePath=__dirname+"/resource/img/_T"+TEMP_IMAGE_INDEX+"."+extname;
 
+			TEMP_IMAGE_INDEX++;
+			if(TEMP_IMAGE_INDEX>=MAX_TEMP_IMAGE_COUNT){
+				TEMP_IMAGE_INDEX=0;
+			}
+
+			request(src).pipe(fs.createWriteStream(savePath)).on('close',function(){
+				var req={
+					method:"post",
+					url:"https://up.cafe.naver.com/AttachChatPhotoForJindoUploader.nhn",
+					json:true,
+					headers:{
+					'Cookie':loginSession,
+					},
+					formData:{
+						photo:{
+							value:fs.createReadStream(savePath),
+							options:null
+						},
+						callback:'/html/AttachImageDummyCallback.html',
+						callback_func:Math.floor(Math.random()*10000)+'_func'
+					}
+				};
+
+				request(req,function(err,res,data){
+					if(err){
+						return;
+					}
+					var temp=data.split('"savedPath":"')[1];
+					if(!temp){return}
+					var savedPath=temp.split('","width"')[0];
+
+					temp=temp.split('"width":')[1];
+
+					var width   =temp.split(',\"')[0];
+
+					temp=temp.split('"height":')[1];
+					var height  =temp.split(',"')[0];
+					temp=temp.split('"size":')[1]
+					var size    =temp.split(',"')[0];
+
+					if(typeof callback=="function"){
+						callback.apply({
+							fileSize:Number(size),
+							width:Number(width),
+							height:Number(height),
+							path:savedPath
+						});
+					}
+				});
+
+			}).on('error',function(){
+				callback(true);
+			});
+		});
+	}
+
+	ProcessingComments({chatURL:""});
+	ProcessingComments({chatURL:""});
 }
