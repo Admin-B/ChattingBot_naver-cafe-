@@ -146,6 +146,9 @@ module.exports=function(HTTP_SERVER){
 	var TEMP_IMAGE_INDEX=0;
 	function uploadImage(src,callback){
 		request(src,function(err,res,data){
+			if(typeof data!="string"){
+				return;
+			}
 			if(data.length>50000000){
 				throw '업로드 하려는 파일의 크기가 한도를 초과하였습니다.';
 			}
