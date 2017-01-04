@@ -30,7 +30,7 @@ module.exports=function(HTTP_SERVER){
 	Array.prototype.last=function(){return this[this.length-1];}
 
 	//로그인 세션
-	var loginSession="";
+	const loginSession="";
 	function ProcessingComments(Info){
 		var chatURL=Info.chatURL;
 		if(!chatURL){
