@@ -1,4 +1,3 @@
 # ChattingBot_naver-cafe-
-<img src="http://imgur.com/e9be5115-3562-4635-88d1-2938c4419fcf">
-
+<img src="http://i.imgur.com/e04R075.png">
 look _BOT.js
